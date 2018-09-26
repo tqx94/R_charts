@@ -1,0 +1,56 @@
+---
+title: "Plotting of charts"
+output: html_document
+---
+```{r setup, include=FALSE}
+packages <- c("dplyr",
+              "magrittr",
+              "data.table",
+              "tidytext",
+              "ggplot2",
+              "lubridate",
+              "reshape2",
+              "knitr", 
+              "wordcloud",
+              "RColorBrewer")
+lapply(packages, require, character.only = TRUE)
+```
+
+1. Wordcloud
+```{r, wordcloud}
+
+
+#visualising topics of words based on the max value of phi
+set.seed(1234)
+for(i in 1:length(unique(df$topic)))
+{  wordcloud(words = subset(df ,topic == i)$word, freq = subset(df ,topic == i)$value, min.freq = 1,
+             max.words=200, random.order=FALSE, rot.per=0.35, 
+             colors=brewer.pal(8, "Dark2"))}
+```
+
+2. Lollipop chart
+```{r, lollipop chart}
+ggplot(df,
+       aes(x = reorder(reason_cat, -avgvol), y = avgvol, group= 1,color = categorisation_bucket, fill = categorisation_bucket)) +
+  geom_point(size=5, alpha=0.7, shape=21, stroke=2) +
+  geom_segment( aes(x=reason_cat, xend=reason_cat, y=0, yend=avgvol))+
+  ylab("Count") + xlab("Message Type") +
+  theme_classic()+ theme(axis.text.x = element_text(angle = 45, hjust = 1,size = 16), 
+                         axis.text.y = element_text(size = 12),
+                         axis.title = element_text(size = 17, face ="bold"), 
+                         title = element_text(size =18, face = "bold"))+
+  guides(fill=guide_legend(title="Factor")) 
+```
+
+3. Heatmap
+```{r, heatmap}
+ggplot(df, aes(product, as.factor(granular_cat))) +
+  geom_tile(aes(fill = avgvol)) + ggtitle("Average trades/day for each product and issue")+
+  geom_text(aes(label = avgvol), size = 10) +theme_bw()+
+  scale_fill_gradient(low = "white", high = "firebrick3",name = "Count") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1,size = 16), 
+        axis.text.y = element_text(size = 16),
+        axis.title = element_text(size = 17, face ="bold"), 
+        title = element_text(size =18, face = "bold"))+
+  ylab("Issue Type") +xlab("Product")
+```
